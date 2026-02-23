@@ -232,14 +232,61 @@ async def delete_tweet(tweet_id: str) -> Dict:
 
 @server.tool(name="get_tweet_details", description="Get detailed information about a specific tweet")
 async def get_tweet_details(tweet_id: str) -> Dict:
-    """Fetches tweet details.
+    """Fetches tweet details, including article fields when available.
 
     Args:
         tweet_id (str): The ID of the tweet to fetch.
     """
     client, _ = initialize_twitter_clients()
-    tweet = client.get_tweet(id=tweet_id, tweet_fields=["id", "text", "created_at", "author_id"])
-    return tweet.data.data if tweet.data else None
+    tweet = client.get_tweet(
+        id=tweet_id,
+        tweet_fields=[
+            "id",
+            "text",
+            "created_at",
+            "author_id",
+            "lang",
+            "entities",
+            "public_metrics",
+            "article",
+            "note_tweet",
+            "edit_history_tweet_ids",
+        ],
+    )
+
+    if not tweet or not tweet.data:
+        return None
+
+    raw = tweet.data.data if hasattr(tweet.data, "data") else tweet.data
+    if not isinstance(raw, dict):
+        # Tweepy models may expose a .data dict; fallback to object serialization
+        raw = dict(raw)
+
+    article = raw.get("article") or {}
+    entities = raw.get("entities") or {}
+    urls = entities.get("urls") or []
+    has_article_link = any(
+        "/i/article/" in str(u.get("expanded_url") or u.get("unwound_url") or "")
+        for u in urls
+        if isinstance(u, dict)
+    )
+
+    article_text = article.get("plain_text") or article.get("preview_text")
+    reason = None
+    if has_article_link and not article_text:
+        reason = "Article link exists, but full text is not returned by current API response (plan/field restrictions)."
+    elif not article:
+        reason = "No article payload on this tweet."
+
+    return {
+        **raw,
+        "article_extracted": {
+            "title": article.get("title"),
+            "text": article_text,
+            "has_full_text": bool(article.get("plain_text")),
+            "reason": reason,
+        },
+    }
 
 @server.tool(name="create_poll_tweet", description="Create a tweet with a poll")
 async def create_poll_tweet(text: str, choices: List[str], duration_minutes: int) -> Dict:

@@ -1,0 +1,8 @@
+{
+  "id": "x-tools",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

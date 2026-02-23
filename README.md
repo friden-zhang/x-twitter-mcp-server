@@ -502,6 +502,27 @@ Below is a list of all tools provided by the `x-twitter-mcp` server, along with 
 - **Syntax Warnings**:
     - If you see `SyntaxWarning` messages from Tweepy, they are due to docstring issues in Tweepy with Python 3.13. The server includes a warning suppression to handle this.
 
+## OpenClaw bridge plugin (x-tools)
+
+This repo includes an OpenClaw bridge plugin under `openclaw/x-tools`.
+
+It provides:
+- `x_get_tweet` (tweet id/url -> MCP `get_tweet_details`)
+- `x_mcp_tool` (raw MCP tool call)
+
+Install into OpenClaw:
+
+```bash
+mkdir -p ~/.openclaw/extensions/x-tools
+cp -r openclaw/x-tools/* ~/.openclaw/extensions/x-tools/
+openclaw plugins enable x-tools
+openclaw gateway restart
+```
+
+Optional env vars (for OpenClaw gateway environment):
+- `X_MCP_BASE_URL` (default `http://127.0.0.1:8081/mcp`)
+- `X_MCP_CONFIG_B64` (optional config query for MCP)
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request on the [GitHub repository](https://github.com/rafaljanicki/x-twitter-mcp-server).

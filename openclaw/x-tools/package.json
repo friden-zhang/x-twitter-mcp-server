@@ -1,0 +1,8 @@
+{
+  "name": "x-tools",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "OpenClaw plugin bridge for x-twitter-mcp-server",
+  "main": "index.ts"
+}
